@@ -3,7 +3,9 @@ package com.thirdvive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Shared client initialization; Vivecraft gameplay hooks will live in common. */
+import java.nio.file.Path;
+
+/** Shared client initialization and config ownership. */
 public final class ThirdVive {
     public static final String MOD_ID = "thirdvive";
     public static final Logger LOGGER = LoggerFactory.getLogger("3rdVive");
@@ -12,8 +14,8 @@ public final class ThirdVive {
 
     private ThirdVive() {}
 
-    public static void init() {
-        config = ThirdViveConfig.load();
+    public static void init(Path configDir) {
+        config = ThirdViveConfig.load(configDir);
         LOGGER.info("3rdVive initialized (enabled={}, distance={})", config.enabled, config.distance);
     }
 }

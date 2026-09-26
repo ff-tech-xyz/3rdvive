@@ -2,7 +2,6 @@ package com.thirdvive;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,8 +16,8 @@ public final class ThirdViveConfig {
     public double distance = 4.0;
     public boolean firstPersonInMenus = true;
 
-    public static ThirdViveConfig load() {
-        Path path = Minecraft.getInstance().gameDirectory.toPath().resolve("config/thirdvive.json");
+    public static ThirdViveConfig load(Path configDir) {
+        Path path = configDir.resolve("thirdvive.json");
         try {
             Files.createDirectories(path.getParent());
             if (!Files.exists(path)) {
