@@ -1,369 +1,206 @@
-Goal
-3rdVive lets a Vivecraft player use Minecraft's normal third-person camera inside the headset. Only the camera moves: all Vivecraft gameplay stays exactly as it is. The project layout is in the companion scaffold doc.
-Required behavior
-1. The toggle-perspective key works like vanilla in VR. F5 (or whatever it is rebound to) cycles first person → third person back → third person front, using vanilla's own CameraType.
-2. The camera type carries across VR on/off. Switching into VR while in third person stays in third person, and vice versa. Vivecraft currently forces first person.
-3. The camera is mounted 4 blocks away from the head, like vanilla. Back view sits behind the headset; front view sits in front and looks back at the player.
-4. The camera orbits with the real head. It follows the headset's look direction, so turning your head swings the camera around you, and you always see yourself. Looking up physically makes the character look up, and the camera drops below the player, just like vanilla.
-5. The camera doesn't clip through walls. It pulls in toward the head when blocked, like vanilla's zoom clipping.
-6. Your full body is visible. Head, torso and legs render, and the model's arms and hands follow the controllers, holding items as Vivecraft already shows to other players.
-7. Gameplay doesn't change. Aiming, block breaking, pointers, teleport, climbing, roomscale swings, menus, and the body pose sent to the server all keep using the real headset and controller poses.
-Out of scope
-• Any change to vanilla third-person behavior on flat screen.
-• Any server-side component: the mod is client-only.
-• Changing how Vivecraft animates the player model.
-How Vivecraft blocks third person today
-Vivecraft blocks third person in four places, all client-side. References are to the Multiloader-26.2 branch (1.3.15; the latest commit, 4320826, is from Sep 23, 2026). Paths are under common/src/main/java/org/vivecraft/.
-#
-What it does
-Where
-1
-Forces CameraType.FIRST_PERSON when VR turns on. Saves the old type and restores it when VR turns off
-mixin/client_vr/MinecraftVRMixin.java → vivecraft$switchVRState(boolean) (~line 796)
-2
-In VR, the toggle-perspective key cycles the desktop mirror mode instead of calling setCameraType
-MinecraftVRMixin.java → @WrapOperation vivecraft$changeVrMirror on handleKeybinds → Options.setCameraType (~line 708)
-3
-Cancels vanilla Camera.alignWithEntity and puts the camera at each eye's position. Sets detached = false
-mixin/client_vr/CameraVRMixin.java → vivecraft$setOrientation + vivecraft$setupVRCamera()
-4
-The view rotation comes from the eye pose matrix, not the camera's yaw and pitch
-client_vr/render/helpers/RenderHelper.java → getVRModelView(RenderPass), used by CameraVRMixin.vivecraft$vrModelView
-Four more checks control what is drawn for the local player:
-Check
-Current behavior
-Where
-RenderPass.renderPlayer(pass)
-Draws own body in LEFT/RIGHT/CENTER only if the "render self" option is on
-api/client/data/RenderPass.java
-Camera.isDetached()
-Returns renderPlayer(pass) in VR
-CameraVRMixin.vivecraft$renderSelf
-VREffectsHelper.isFirstPersonEntityPass()
-True → hides head and hat, and optionally the model's arms
-client_vr/render/helpers/VREffectsHelper.java, used in client/render/VRPlayerModel.java
-VRArmHelper.shouldRenderHands()
-Draws the floating first-person controller hands
-client_vr/render/helpers/VRArmHelper.java
-Why this is good news
-Vivecraft already builds a fully posed body (head, arms, body yaw) from the headset and controllers for the local player. It shows that body in the screenshot camera and the third-person mirror. Once the camera moves and these four checks flip, the player model is already correct. No animation code is needed.
-The camera position and rotation are set per render pass: LEFT and RIGHT are the headset eyes, and CENTER is the desktop mirror. Moving the camera in vivecraft$setupVRCamera therefore moves both eyes and the flat-screen mirror together.
-Implementation plan
-The mod is seven small mixins plus one helper class. None of them replace Vivecraft code; each flips one check or adds an offset after Vivecraft has run.
-Mixin
-Target
-Kind
-Change
-MinecraftMixin
-Minecraft.vivecraft$switchVRState (added by Vivecraft)
-@Dynamic @WrapWithCondition
-Skip both setCameraType calls
-MinecraftToggleKeyMixin
-Vivecraft handler vivecraft$changeVrMirror
-MixinSquared @TargetHandler
-Make its VRState.VR_RUNNING read false, so vanilla setCameraType runs
-CameraMixin
-Camera.vivecraft$setupVRCamera (added by Vivecraft)
-@Dynamic @Inject TAIL
-Apply the third-person offset and rotation
-CameraMixin
-Camera.isDetached
-@ModifyReturnValue
-True in third person
-RenderHelperMixin
-RenderHelper.getVRModelView
-@ModifyReturnValue
-Front view: turn the view 180°
-VREffectsHelperMixin
-VREffectsHelper.isFirstPersonEntityPass
-@ModifyReturnValue
-False in third person (head and arms shown)
-RenderPassMixin
-RenderPass.renderPlayer
-@ModifyReturnValue
-True for head passes in third person
-VRArmHelperMixin
-VRArmHelper.shouldRenderHands
-@ModifyReturnValue
-False in third person (no floating hands)
-All mixins use priority 1500, so they apply after Vivecraft's (default 1000). Vivecraft's merged methods (vivecraft$...) then already exist in the target class. Use require = 0 on every @Dynamic or MixinSquared hook, so a Vivecraft rename disables that one feature and logs a warning instead of crashing.
-1. The shared state helper
-Every hook asks one question: "should this render pass use the third-person camera right now?"
-public final class ThirdViveState {
-    private static final Minecraft MC = Minecraft.getInstance();
-
-    /** Third person is on and VR is running (ignores the render pass). */
-    public static boolean active() {
-        if (!VRState.VR_RUNNING || !ThirdViveConfig.enabled) return false;
-        if (MC.options.getCameraType().isFirstPerson()) return false;
-        if (MC.level == null || MethodHolder.isInMenuRoom()) return false;
-        if (ThirdViveConfig.firstPersonInMenus
-            && (MC.gui.screen() != null || KeyboardHandler.SHOWING)) return false;
-        return true;
-    }
-
-    /** Only the headset eyes and the desktop first-person mirror get moved. */
-    public static boolean activeForPass(RenderPass pass) {
-        return active() && RenderPass.isFirstPerson(pass); // LEFT, RIGHT, CENTER
-    }
-
-    public static boolean isFrontView() {
-        return MC.options.getCameraType().isMirrored(); // THIRD_PERSON_FRONT
-    }
-}
-2. Keep the camera type across VR on/off
-@Mixin(value = Minecraft.class, priority = 1500)
-public class MinecraftMixin {
-    @Dynamic("added by Vivecraft MinecraftVRMixin")
-    @WrapWithCondition(method = "vivecraft$switchVRState",
-        at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/Options;setCameraType(Lnet/minecraft/client/CameraType;)V"),
-        require = 0)
-    private boolean thirdvive$keepCameraType(Options options, CameraType type) {
-        return !ThirdViveConfig.enabled; // skip Vivecraft's force-first-person and restore
-    }
-}
-3. Give the toggle key back to vanilla
-vivecraft$changeVrMirror is a Vivecraft mixin handler, so it needs MixinSquared. The handler checks VRState.VR_RUNNING; forcing that read to false makes it call vanilla's setCameraType.
-@Mixin(value = Minecraft.class, priority = 1500)
-public class MinecraftToggleKeyMixin {
-    @TargetHandler(mixin = "org.vivecraft.mixin.client_vr.MinecraftVRMixin",
-                   name = "vivecraft$changeVrMirror")
-    @ModifyExpressionValue(method = "@MixinSquared:Handler",
-        at = @At(value = "FIELD", target = "Lorg/vivecraft/client_vr/VRState;VR_RUNNING:Z"),
-        require = 0)
-    private boolean thirdvive$vanillaToggle(boolean vrRunning) {
-        return vrRunning && !ThirdViveConfig.enabled;
-    }
-}
-The side effect: the key no longer cycles Vivecraft's desktop mirror mode. The mirror stays settable in Vivecraft's menu. Optional: add a separate, unbound "Cycle VR mirror" key that calls vrSettings.setOptionValue(VRSettings.VrOptions.MIRROR_DISPLAY).
-4. Move the camera
-@Mixin(value = Camera.class, priority = 1500)
-public abstract class CameraMixin {
-    @Shadow private Entity entity;
-    @Shadow private @Nullable Level level;
-    @Shadow protected abstract void setPosition(Vec3 pos);
-    @Shadow protected abstract void setRotation(float yRot, float xRot);
-
-    @Dynamic("added by Vivecraft CameraVRMixin")
-    @Inject(method = "vivecraft$setupVRCamera", at = @At("TAIL"), require = 0)
-    private void thirdvive$offset(CallbackInfo ci) {
-        RenderPass pass = ClientDataHolderVR.getInstance().currentPass;
-        if (!ThirdViveState.activeForPass(pass) || this.level == null) return;
-        ThirdPersonCameraMath.Pose p = ThirdPersonCameraMath.compute(this.level, this.entity, pass);
-        this.setPosition(p.position());
-        this.setRotation(p.yaw(), p.pitch()); // used for culling/particles, not the view matrix
-    }
-
-    @ModifyReturnValue(method = "isDetached", at = @At("RETURN"))
-    private boolean thirdvive$detached(boolean detached) {
-        return detached
-            || ThirdViveState.activeForPass(ClientDataHolderVR.getInstance().currentPass);
-    }
-}
-5. Turn the view for front view
-The view matrix comes from getVRModelView, not from the camera's yaw and pitch, so front view has to be handled here too.
-@Mixin(RenderHelper.class)
-public class RenderHelperMixin {
-    @ModifyReturnValue(method = "getVRModelView", at = @At("RETURN"))
-    private static Matrix4f thirdvive$frontView(Matrix4f view,
-                                                @Local(argsOnly = true) RenderPass pass) {
-        if (ThirdViveState.activeForPass(pass) && ThirdViveState.isFrontView()) {
-            // rotate 180° about the view's own up axis = turn the head around
-            return new Matrix4f().rotationY((float) Math.PI).mul(view);
-        }
-        return view;
-    }
-}
-6. Show the body, hide the floating hands
-@Mixin(VREffectsHelper.class)
-public class VREffectsHelperMixin {
-    @ModifyReturnValue(method = "isFirstPersonEntityPass", at = @At("RETURN"))
-    private static boolean thirdvive$showHead(boolean fp) {
-        return fp && !ThirdViveState.activeForPass(ClientDataHolderVR.getInstance().currentPass);
-    }
-}
-
-@Mixin(RenderPass.class)
-public class RenderPassMixin {
-    @ModifyReturnValue(method = "renderPlayer", at = @At("RETURN"))
-    private static boolean thirdvive$renderSelf(boolean render,
-                                                @Local(argsOnly = true) RenderPass pass) {
-        return render || ThirdViveState.activeForPass(pass);
-    }
-}
-
-@Mixin(VRArmHelper.class)
-public class VRArmHelperMixin {
-    @ModifyReturnValue(method = "shouldRenderHands", at = @At("RETURN"))
-    private static boolean thirdvive$noFloatingHands(boolean hands) {
-        return hands && !ThirdViveState.activeForPass(ClientDataHolderVR.getInstance().currentPass);
-    }
-}
-With these flipped, VRPlayerModel stops hiding the head and arms, and the model's arms follow the controllers as Vivecraft already does for other players. Held items render in the model's hands through the normal third-person item layer.
-Camera math
-The camera sits on a line through the headset along its look direction, like vanilla does along the entity's look direction. Each eye keeps its own small offset from the head, so stereo depth still works.
-View
-Camera position
-View rotation
-First person
-Unchanged (Vivecraft)
-Unchanged
-Third person back
-head − fwd · d + eyeOff
-Same as the headset
-Third person front
-head + fwd · d + rot180(eyeOff)
-Headset turned 180° about its own up axis
-Definitions:
-• head = vrData.hmd.getPosition() (world space)
-• fwd = vrData.hmd.getDirection() (unit look vector)
-• eyeOff = vrData.getEye(pass).getPosition() − head: half the IPD for LEFT/RIGHT, and about zero for CENTER
-• d = min(config distance × world scale, clip distance). The distance defaults to 4.0, vanilla's value.
-Front view must rotate eyeOff too. Otherwise the left eye renders from the right side and the depth inverts. Rotating a vector v by 180° about the headset's up axis u, where u = hmd.getCustomVector(0, 1, 0):
-v' = 2\,(v \cdot u)\,u - v
-This also reproduces vanilla's behavior when you look up. fwd points up, so the back-view camera lands below and behind the player, looking up at them.
-ThirdPersonCameraMath.java
-public final class ThirdPersonCameraMath {
-    public record Pose(Vec3 position, float yaw, float pitch) {}
-
-    public static Pose compute(Level level, Entity entity, RenderPass pass) {
-        ClientDataHolderVR dh = ClientDataHolderVR.getInstance();
-        VRData data = dh.vrPlayer.getVRDataWorld();
-        boolean front = ThirdViveState.isFrontView();
-
-        Vec3 head = data.hmd.getPosition();
-        Vec3 fwd  = new Vec3(data.hmd.getDirection());
-        Vec3 up   = new Vec3(data.hmd.getCustomVector(new Vector3f(0, 1, 0)));
-        Vec3 eyeOff = data.getEye(pass).getPosition().subtract(head);
-        if (front) {
-            eyeOff = up.scale(2 * eyeOff.dot(up)).subtract(eyeOff); // rot180 about up
-        }
-
-        Vec3 dir = front ? fwd : fwd.scale(-1);
-        double wanted = ThirdViveConfig.distance * dh.vrPlayer.worldScale;
-        double d = clip(level, entity, head, dir, wanted);
-
-        float yaw   = data.hmd.getYaw() + (front ? 180f : 0f);
-        float pitch = front ? data.hmd.getPitch() : -data.hmd.getPitch(); // Vivecraft passes -pitch
-        return new Pose(head.add(dir.scale(d)).add(eyeOff), yaw, pitch);
-    }
-
-    /** Same idea as vanilla Camera.getMaxZoom: 8 rays from a small box around the head. */
-    private static double clip(Level level, Entity e, Vec3 from, Vec3 dir, double max) {
-        double d = max;
-        for (int i = 0; i < 8; i++) {
-            Vec3 o = new Vec3((i & 1) * 2 - 1, (i >> 1 & 1) * 2 - 1, (i >> 2 & 1) * 2 - 1).scale(0.1);
-            Vec3 a = from.add(o);
-            HitResult hit = level.clip(new ClipContext(a, a.add(dir.scale(max)),
-                ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, e));
-            if (hit.getType() != HitResult.Type.MISS) {
-                d = Math.min(d, hit.getLocation().distanceTo(a));
-            }
-        }
-        return d;
-    }
-}
-The math is written from the Vivecraft source; it has not been compiled or run yet. Check two things in-game first: the pitch sign passed to setRotation, and the direction of the front-view matrix rotation. A wrong sign shows up immediately as an upside-down or mirrored view.
-Build setup, dependencies and config
-Start from the 26.2 branch of MultiLoader-Template, then follow the file tree and config files in the scaffold doc.
-Dependency
-Version
-How it's used
+Overview
+3rdVive is a client-side Vivecraft add-on with a common module and a jar for each of Fabric and NeoForge. It is built on the 26.2 branch of MultiLoader-Template, which uses the same common + per-loader layout as Vivecraft itself.
+Item
+Value
+Display name
+3rdVive
+Mod ID
+thirdvive (IDs must start with a letter, so 3rdvive is invalid)
+Java package
+com.thirdvive (rename freely)
 Minecraft
-26.2
-Unobfuscated since 26.1, so no mappings are needed. Class names match the Vivecraft source
+26.2 (unobfuscated, so no mappings)
 Java
 25
-Same as Vivecraft
 Fabric Loader / Fabric API
 0.19.3 / 0.152.1+26.2
-Fabric jar. Use plain implementation, not modImplementation
 NeoForge
 26.2.0.1-beta
-NeoForge jar
-Vivecraft
+Vivecraft (compile + runtime dep)
 26.2-1.3.15
-maven.modrinth:vivecraft:26.2-1.3.15-fabric / -neoforge; compileOnly in common, implementation per loader so dev runs have VR
-MixinExtras
-bundled with both loaders
-@WrapWithCondition, @ModifyReturnValue, @ModifyExpressionValue, @Local
 MixinSquared
 0.3.7-beta.3
-Bundled (include on Fabric, jarJar on NeoForge). Used only for the toggle-key hook
-Mark Vivecraft as a required dependency in both loaders' metadata, with a version range starting at 1.3.15. Vivecraft is LGPLv3, so a separate add-on is fine; LGPL-3.0 for 3rdVive keeps things simple.
-Debugging mixins
-• Run with -Dmixin.debug.export=true and inspect .mixin.out/ to confirm vivecraft$switchVRState and vivecraft$setupVRCamera exist under those names in the merged classes.
-• Log at startup whether each require = 0 hook applied. A silent miss after a Vivecraft update is the main maintenance risk.
-Config (config/thirdvive.json)
-Key
-Type
-Default
-Effect
-enabled
-bool
-true
-Master switch. When false, Vivecraft behaves as stock
-distance
-float (blocks)
-4.0
-Camera distance before clipping; scaled by Vivecraft world scale
-firstPersonInMenus
-bool
-true
-Use first person while a screen or the VR keyboard is open, since those float at the head
-smoothing
-float 0–1
-0.0
-Optional position lerp to damp head jitter, which is amplified 4 blocks out. 0 = vanilla-like
-A plain JSON file read at startup is enough for v1. A settings screen (Mod Menu on Fabric, the config screen extension point on NeoForge) can come later.
-Risks and test checklist
-The biggest risk is Vivecraft renaming its internal methods. The biggest user-facing risk is motion sickness.
-Risk
-Why
-Mitigation
-Vivecraft update breaks hooks
-vivecraft$switchVRState, vivecraft$setupVRCamera and vivecraft$changeVrMirror are internal names
-require = 0, a startup log of applied hooks, a pinned version range, and retesting on each Vivecraft release
-Motion sickness
-Small head turns swing the camera several blocks
-distance and smoothing config; say so on the mod page
-Menus and keyboard hard to use
-Vivecraft places them in the world at the head
-firstPersonInMenus (default on)
-Stereo inverted in front view
-Eye offsets not rotated
-Rotate eyeOff 180° about the head's up axis (camera math)
-Shader shadows off-center
-Vivecraft sets ShadersHelper.SHADOW_CAMERA_POSITION before the offset
-Acceptable; optionally set it again after the offset
-Mirror-mode key lost
-The toggle key now changes perspective
-The mirror stays in Vivecraft's menu; optional separate key
-Camera inside blocks
-Head against a wall
-8-ray clip like vanilla
-Test checklist
-[ ] Fabric and NeoForge both launch with Vivecraft 1.3.15, and with Vivecraft absent the game shows a clear missing-dependency error
-[ ] Flat screen: F5 is unchanged from vanilla
-[ ] In third person on flat screen, entering VR stays in third person; leaving VR keeps the current type
-[ ] In VR, F5 cycles first → back → front → first
-[ ] Back view: the camera stays behind the head while turning a full 360° in roomscale
-[ ] Physically looking up puts the camera under the player; looking down puts it above
-[ ] Front view: the player faces the camera, stereo depth looks correct, and the view isn't mirrored
-[ ] The model's head, arms and held items follow the headset and controllers; no floating hands
-[ ] Block breaking, placing, attacking, bow, teleport, climbing and swimming all work as in first person
-[ ] Pointers, crosshair and teleport arc still show and still come from the controllers
-[ ] With a menu or keyboard open and firstPersonInMenus on, the view drops to first person
-[ ] Against a wall, the camera pulls in instead of going through it
-[ ] Seated mode works the same way
-[ ] The desktop mirror in "first person" mode shows the third-person view; screenshot camera and third-person mirror modes are unchanged
-[ ] With Iris/shaders, no crash and shadows look acceptable
-[ ] On a multiplayer server with Vivecraft, other players see normal VR poses
-Sources
-• Vivecraft source, Multiloader-26.2 branch
-• Vivecraft releases
-• Vivecraft on CurseForge (26.2 files)
-• Java Edition 26.2 – Minecraft Wiki
-• MixinSquared
-• MultiLoader-Template, 26.2 branch
+Side
+Client only
+Versions match what Vivecraft 1.3.15 builds against. All game logic lives in common/; the loader folders only hold an entrypoint and metadata.
+File tree
+Files marked (template) come unchanged from MultiLoader-Template; everything else is new or edited for 3rdVive.
+3rdvive/
+├── build.gradle                      (template)
+├── settings.gradle                   (template; rootProject.name = '3rdvive')
+├── gradle.properties                 versions + mod metadata
+├── gradlew / gradlew.bat / gradle/   (template)
+├── LICENSE                           LGPL-3.0 recommended (matches Vivecraft)
+├── README.md
+│
+├── buildSrc/                         (template) shared Gradle conventions
+│   └── src/main/groovy/
+│       ├── multiloader-common.gradle   + Modrinth & Bawnorton maven repos
+│       └── multiloader-loader.gradle
+│
+├── common/
+│   ├── build.gradle                  compileOnly Vivecraft + MixinSquared
+│   └── src/main/
+│       ├── java/com/thirdvive/
+│       │   ├── ThirdVive.java                 MOD_ID, LOGGER, init()
+│       │   ├── ThirdViveState.java            isThirdPersonVR(), isFrontView(), shouldOffset()
+│       │   ├── camera/
+│       │   │   └── ThirdPersonCameraMath.java  offset, clip raycast, front-view eye swap
+│       │   ├── config/
+│       │   │   └── ThirdViveConfig.java       distance, firstPersonInMenus, enabled
+│       │   ├── platform/                      (template) loader service lookup
+│       │   │   ├── Services.java
+│       │   │   └── services/IPlatformHelper.java
+│       │   └── mixin/
+│       │       ├── MinecraftMixin.java         keep camera type on VR enter/exit
+│       │       ├── MinecraftToggleKeyMixin.java   (MixinSquared) F5 = vanilla again
+│       │       ├── CameraMixin.java            move camera off the head; isDetached
+│       │       └── vivecraft/
+│       │           ├── RenderHelperMixin.java     front-view 180° view rotation
+│       │           ├── VREffectsHelperMixin.java  show head/arms in 3rd person
+│       │           ├── RenderPassMixin.java       render own body in 3rd person
+│       │           └── VRArmHelperMixin.java      hide floating VR hands in 3rd person
+│       └── resources/
+│           ├── thirdvive.mixins.json
+│           ├── thirdvive.png                  mod icon
+│           └── assets/thirdvive/lang/en_us.json
+│
+├── fabric/
+│   ├── build.gradle                  implementation Vivecraft (fabric) + include MixinSquared
+│   └── src/main/
+│       ├── java/com/thirdvive/fabric/
+│       │   ├── ThirdViveFabric.java           ClientModInitializer → ThirdVive.init()
+│       │   └── platform/FabricPlatformHelper.java
+│       └── resources/
+│           ├── fabric.mod.json
+│           └── META-INF/services/com.thirdvive.platform.services.IPlatformHelper
+│
+└── neoforge/
+    ├── build.gradle                  implementation Vivecraft (neoforge) + jarJar MixinSquared
+    └── src/main/
+        ├── java/com/thirdvive/neoforge/
+        │   ├── ThirdViveNeoForge.java         @Mod(value = MOD_ID, dist = Dist.CLIENT)
+        │   └── platform/NeoForgePlatformHelper.java
+        └── resources/
+            └── META-INF/
+                ├── neoforge.mods.toml
+                └── services/com.thirdvive.platform.services.IPlatformHelper
+Key file contents
+These are starting points; exact Gradle plugin syntax follows whatever the template's 26.2 branch ships.
+gradle.properties
+minecraft_version=26.2
+java_version=25
+
+mod_id=thirdvive
+mod_name=3rdVive
+version=0.1.0
+group=com.thirdvive
+license=LGPL-3.0
+
+fabric_loader_version=0.19.3
+fabric_version=0.152.1+26.2
+neoforge_version=26.2.0.1-beta
+
+vivecraft_version=26.2-1.3.15
+vivecraft_range=>=1.3.15 <1.4.0
+mixinsquared_version=0.3.7-beta.3
+Repositories (buildSrc/multiloader-common.gradle)
+repositories {
+    maven { url = 'https://api.modrinth.com/maven' ; content { includeGroup 'maven.modrinth' } }
+    maven { url = 'https://maven.bawnorton.com/releases' }
+}
+Dependencies
+// common/build.gradle
+compileOnly "maven.modrinth:vivecraft:${vivecraft_version}-fabric"
+compileOnly annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:${mixinsquared_version}")
+
+// fabric/build.gradle  (26.x is unobfuscated: plain implementation, no modImplementation)
+implementation "maven.modrinth:vivecraft:${vivecraft_version}-fabric"
+include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:${mixinsquared_version}")))
+
+// neoforge/build.gradle
+implementation "maven.modrinth:vivecraft:${vivecraft_version}-neoforge"
+compileOnly annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:${mixinsquared_version}")
+jarJar(implementation("com.github.bawnorton.mixinsquared:mixinsquared-neoforge:${mixinsquared_version}"))
+thirdvive.mixins.json (common)
+Priority 1500 makes these apply after Vivecraft's (default 1000), so the methods Vivecraft adds already exist.
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.thirdvive.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixinPriority": 1500,
+  "client": [
+    "MinecraftMixin",
+    "MinecraftToggleKeyMixin",
+    "CameraMixin",
+    "vivecraft.RenderHelperMixin",
+    "vivecraft.VREffectsHelperMixin",
+    "vivecraft.RenderPassMixin",
+    "vivecraft.VRArmHelperMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}
+fabric.mod.json
+{
+  "schemaVersion": 1,
+  "id": "thirdvive",
+  "version": "${version}",
+  "name": "3rdVive",
+  "description": "Vanilla third-person camera (F5) inside Vivecraft VR.",
+  "license": "LGPL-3.0",
+  "icon": "thirdvive.png",
+  "environment": "client",
+  "entrypoints": { "client": ["com.thirdvive.fabric.ThirdViveFabric"] },
+  "mixins": ["thirdvive.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "vivecraft": "${vivecraft_range}"
+  }
+}
+neoforge.mods.toml
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "LGPL-3.0"
+
+[[mods]]
+modId = "thirdvive"
+version = "${version}"
+displayName = "3rdVive"
+logoFile = "thirdvive.png"
+displayTest = "IGNORE_ALL_VERSION"
+description = "Vanilla third-person camera (F5) inside Vivecraft VR."
+
+[[mixins]]
+config = "thirdvive.mixins.json"
+
+[[dependencies.thirdvive]]
+modId = "neoforge"
+type = "required"
+versionRange = "[26.2.0.1-beta,)"
+side = "CLIENT"
+
+[[dependencies.thirdvive]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.2,26.3)"
+side = "CLIENT"
+
+[[dependencies.thirdvive]]
+modId = "vivecraft"
+type = "required"
+versionRange = "[26.2-1.3.15,)"
+ordering = "AFTER"
+side = "CLIENT"
+Entrypoints
+File
+Job
+ThirdViveFabric.java
+implements ClientModInitializer; calls ThirdVive.init()
+ThirdViveNeoForge.java
+@Mod(value = ThirdVive.MOD_ID, dist = Dist.CLIENT); calls ThirdVive.init()
+ThirdVive.java
+Loads ThirdViveConfig, logs the detected Vivecraft version
+What each mixin does, and how, is in the companion developer spec.
