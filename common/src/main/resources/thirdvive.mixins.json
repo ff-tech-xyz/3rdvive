@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8.7",
+  "package": "com.thirdvive.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "MinecraftPerspectiveMixin",
+    "MinecraftToggleMixin",
+    "CameraMixin",
+    "RenderHelperMixin",
+    "VREffectsHelperMixin",
+    "RenderPassMixin",
+    "VRArmHelperMixin"
+  ],
+  "injectors": {"defaultRequire": 1}
+}
