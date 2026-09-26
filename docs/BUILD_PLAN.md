@@ -4,12 +4,12 @@
 
 Bootstrap the official MultiLoader-Template 26.2 layout; rename to 3rdVive; set project and loader metadata, required Vivecraft dependency and CC0-1.0 license; keep common initialization and client-only entrypoints minimal. Verify both loader builds and processed metadata. The initial scaffold does not register mixins that do not exist.
 
-## Phase 2 — third-person camera
+## Phase 2 — third-person camera (implemented, VR validation pending)
 
-Inspect Vivecraft 26.2-1.3.15 bytecode and merged mixins. Add common state/config and hooks for F5 cycling and camera-type preservation. Implement per-eye offset and vanilla-like clipping, then front-view orientation with correct stereo. Keep Vivecraft gameplay poses untouched. Check missing optional hooks explicitly at startup rather than treating `require = 0` as a complete warning mechanism.
+Pinned Vivecraft 26.2-1.3.15 is checked by the loader. Preserve CameraType across VR transitions and restore vanilla perspective cycling in VR using fail-closed mixins. Offset each eye along the headset's look axis and clip against walls; rotate the view for front mode. Vivecraft gameplay poses are unchanged. The actual camera hook is `Camera.update` immediately after `alignWithEntity`, not the nonexistent `vivecraft$setupVRCamera` in the original proposal.
 
-## Phase 3 — self rendering and client validation
+## Phase 3 — self rendering and client validation (implementation complete, VR testing pending)
 
-Show local posed head, body, controller arms, and held items; suppress floating VR hands in third person. Build both loaders. Validate the supplied checklist on Elijah's VR client: F5, VR transitions, back/front stereo and pitch, wall clipping, self rendering, interactions, menus, mirror, multiplayer poses, and shaders. Place test jars in `/colab` only when testable. Elijah decides any release; do not publish this scaffold as one.
+Render the local posed body and held items while hiding floating first-person hands. Both loader builds and flat-screen client starts have been verified with Vivecraft installed; Elijah still needs to validate on VR hardware: F5, VR transitions, back/front stereo and pitch, wall clipping, self rendering, interactions, menus, mirror, multiplayer poses, and shaders. A green build or main-menu launch does not prove those headset behaviors. No release without Elijah's decision.
 
 The full acceptance checklist and suggested hooks are preserved verbatim in `docs/reference/developer-spec.txt`. Treat the original code snippets as hypotheses until compilation and in-game tests prove them.
