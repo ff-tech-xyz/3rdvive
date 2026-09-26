@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /** Target Vivecraft's wrapper, not vanilla's key handling. */
-@Mixin(value = Minecraft.class, priority = 1000)
+@Mixin(value = Minecraft.class, priority = 1200)
 public class MinecraftToggleMixin {
     @TargetHandler(mixin = "org.vivecraft.mixin.client_vr.MinecraftVRMixin", name = "vivecraft$changeVrMirror")
     @ModifyExpressionValue(method = "@MixinSquared:Handler",

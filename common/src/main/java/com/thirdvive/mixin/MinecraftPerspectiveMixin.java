@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Vivecraft adds this transition method at priority 1100; our 1000 mixin preserves perspective. */
-@Mixin(value = Minecraft.class, priority = 1000)
+/** Use higher injector priority to target methods merged from Vivecraft's priority-1100 mixin. */
+@Mixin(value = Minecraft.class, priority = 1200)
 public class MinecraftPerspectiveMixin {
     @Dynamic("vivecraft$switchVRState is merged from Vivecraft's MinecraftVRMixin")
     @WrapWithCondition(method = "vivecraft$switchVRState(Z)V",
