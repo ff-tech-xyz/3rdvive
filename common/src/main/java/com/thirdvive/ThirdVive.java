@@ -8,9 +8,12 @@ public final class ThirdVive {
     public static final String MOD_ID = "thirdvive";
     public static final Logger LOGGER = LoggerFactory.getLogger("3rdVive");
 
+    public static ThirdViveConfig config;
+
     private ThirdVive() {}
 
     public static void init() {
-        LOGGER.info("3rdVive scaffold loaded; VR camera hooks are not implemented yet");
+        config = ThirdViveConfig.load();
+        LOGGER.info("3rdVive initialized (enabled={}, distance={})", config.enabled, config.distance);
     }
 }
