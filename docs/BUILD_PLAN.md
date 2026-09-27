@@ -6,7 +6,7 @@ Bootstrap the official MultiLoader-Template 26.2 layout; rename to 3rdVive; set 
 
 ## Phase 2 — third-person camera (implemented, VR validation pending)
 
-Pinned Vivecraft 26.2-1.3.15 is checked by the loader. Preserve CameraType across VR transitions and restore vanilla perspective cycling in VR using fail-closed mixins. Offset each eye along the headset's look axis and clip against walls; rotate the view for front mode. Vivecraft gameplay poses are unchanged. The actual camera hook is `Camera.update` immediately after `alignWithEntity`, not the nonexistent `vivecraft$setupVRCamera` in the original proposal.
+Pinned Vivecraft 26.2-1.3.15 is checked by the loader. Preserve CameraType across VR transitions and restore vanilla perspective cycling in VR using fail-closed mixins. During each LEFT/RIGHT/CENTER render pass, replace only that render copy's eye pose with a clipped, head-centered third-person pose. Vivecraft's camera, view matrix and hand-relative effects then read the same eye; the real HMD, controllers, tick data and gameplay poses remain unchanged. The first implementation relocated Minecraft's Camera alone and is superseded by this render-eye design.
 
 ## Phase 3 — self rendering and client validation (implementation complete, VR testing pending)
 

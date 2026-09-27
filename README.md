@@ -2,7 +2,7 @@
 
 A client-side add-on for Vivecraft that moves the headset view to Minecraft's third-person camera. In VR, the configured perspective key cycles first person, back view and front view; aiming, interactions and network pose still use the real headset and controllers. This is experimental and may be uncomfortable.
 
-**Status:** first test build. Both loader clients reach the main menu with Vivecraft 26.2-1.3.15 under a virtual display. Headset behavior, stereo depth, avatar items, clipping and multiplayer interactions have **not** been tested on VR hardware. This is not a release.
+**Status:** experimental headset test build. Both loader jars compile and both revised clients reach the main menu under a virtual display. Headset behavior (stereo depth, avatar items, clipping, multiplayer interactions) has **not** been validated. This is not a release.
 
 ## Requirements
 
@@ -13,11 +13,11 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 
 Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.2-0.1.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.2-0.1.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
 
-Configuration is generated at `config/thirdvive.json` on first launch. `enabled` turns the add-on off without uninstalling it; `distance` defaults to 4 blocks and accepts 0.25–32 (scaled by Vivecraft's world scale); `firstPersonInMenus` defaults to true. Edit while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
+Configuration is generated at `config/thirdvive.json` on first launch. `enabled` turns the add-on off without uninstalling it; `distance` defaults to 0 (vanilla camera distance, including player scale and vehicle), or accepts an unscaled override of 0.25–32 blocks. Existing configs with `distance: 4.0` keep that explicit override until changed to 0. `firstPersonInMenus` defaults to true. Edit while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
 
 The perspective key no longer cycles Vivecraft's desktop mirror mode while the add-on is enabled. Change the mirror mode in Vivecraft's settings instead.
 
-[Requirements](docs/REQUIREMENTS.md), [build plan and VR test checklist](docs/BUILD_PLAN.md), and the original [developer proposal](docs/reference/developer-spec.txt) are retained. The proposal's `vivecraft$setupVRCamera` hook does not exist in the pinned Vivecraft build; this implementation uses `Camera.update` after Vivecraft aligns the eye. The proposal is not a verified description of the shipped code.
+[Requirements](docs/REQUIREMENTS.md), [build plan and VR test checklist](docs/BUILD_PLAN.md), and the original [developer proposal](docs/reference/developer-spec.txt) are retained. The current implementation substitutes LEFT/RIGHT/CENTER poses only during the matching Vivecraft render pass and leaves real headset/controller/tick poses alone; the original camera relocation is removed. The proposal describes an earlier design, not the current build.
 
 ## License
 

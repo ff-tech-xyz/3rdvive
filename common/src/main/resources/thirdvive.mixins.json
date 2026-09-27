@@ -6,8 +6,12 @@
   "client": [
     "MinecraftPerspectiveMixin",
     "MinecraftToggleMixin",
-    "CameraMixin",
-    "RenderHelperMixin",
+    "VRDataMixin",
+    "VRPassHelperMixin",
+    "GameRendererRveMixin",
+    "AvatarLimbScaleMixin",
+    "VRRenderStateMixin",
+    "NameTagFacingMixin",
     "VREffectsHelperMixin",
     "RenderPassMixin",
     "VRArmHelperMixin"

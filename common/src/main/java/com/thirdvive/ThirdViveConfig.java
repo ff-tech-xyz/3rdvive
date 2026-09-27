@@ -13,7 +13,7 @@ import java.nio.file.Path;
 public final class ThirdViveConfig {
     private static final Gson GSON = new Gson();
     public boolean enabled = true;
-    public double distance = 4.0;
+    public double distance = 0.0; // 0 uses Minecraft's camera_distance (including scale and vehicle)
     public boolean firstPersonInMenus = true;
 
     public static ThirdViveConfig load(Path configDir) {
@@ -29,8 +29,8 @@ public final class ThirdViveConfig {
             }
             try (Reader reader = Files.newBufferedReader(path)) {
                 ThirdViveConfig config = GSON.fromJson(reader, ThirdViveConfig.class);
-                if (config == null || !Double.isFinite(config.distance) || config.distance < 0.25 || config.distance > 32) {
-                    throw new IllegalArgumentException("distance must be between 0.25 and 32 blocks");
+                if (config == null || !Double.isFinite(config.distance) || config.distance < 0 || (config.distance > 0 && config.distance < 0.25) || config.distance > 32) {
+                    throw new IllegalArgumentException("distance must be 0 (vanilla) or between 0.25 and 32 blocks");
                 }
                 return config;
             }
