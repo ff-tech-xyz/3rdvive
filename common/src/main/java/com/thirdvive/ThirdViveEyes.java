@@ -55,10 +55,7 @@ public final class ThirdViveEyes {
     private static void computeFrame(VRData data, boolean front) {
         Minecraft mc = Minecraft.getInstance();
         Matrix4f headRot = data.hmd.getMatrix();
-        Vec3 hmd = data.hmd.getPosition();
-        // Vivecraft's head-pivot estimate without the vertical drop: room +Z is behind the face.
-        Vector3f back = headRot.transformDirection(new Vector3f(0, 0, 0.1F * data.worldScale));
-        Vec3 pivot = hmd.add(back.x, back.y, back.z);
+        Vec3 pivot = ThirdViveAnchor.headCenter(data);
         Vec3 look = new Vec3(data.hmd.getDirection()).normalize();
         Vec3 dir = front ? look : look.scale(-1);
         float wanted = VanillaThirdPerson.distance(mc.player, ThirdVive.config.distance);

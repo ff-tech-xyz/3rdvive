@@ -7,15 +7,20 @@ import org.vivecraft.client_vr.VRState;
 import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.MethodHolder;
 
-/** Render-only perspective decision; never substitutes the headset pose used for gameplay. */
+/** Third-person tracking lock and the separate render-pass camera decision. */
 public final class ThirdViveState {
     private ThirdViveState() {}
 
-    public static boolean active() {
+    public static boolean locked() {
         Minecraft mc = Minecraft.getInstance();
         return ThirdVive.config != null && ThirdVive.config.enabled && VRState.VR_RUNNING
-            && !mc.options.getCameraType().isFirstPerson() && mc.level != null
-            && !MethodHolder.isInMenuRoom()
+            && mc.level != null && mc.player != null
+            && !mc.options.getCameraType().isFirstPerson() && !MethodHolder.isInMenuRoom();
+    }
+
+    public static boolean active() {
+        Minecraft mc = Minecraft.getInstance();
+        return locked()
             && (!ThirdVive.config.firstPersonInMenus || (mc.gui.screen() == null && !KeyboardHandler.SHOWING));
     }
 
