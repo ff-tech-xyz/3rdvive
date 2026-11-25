@@ -26,6 +26,9 @@ public final class ThirdViveEyes {
     public static void beginPass(RenderPass pass) { renderingPass = pass; }
     public static void endPass() { renderingPass = null; }
 
+    /** True only while Vivecraft is drawing one VR view (between its position save and restore). */
+    public static boolean inPass() { return renderingPass != null; }
+
     public static void runBypassed(Runnable action) {
         bypassDepth++;
         try { action.run(); } finally { bypassDepth--; }

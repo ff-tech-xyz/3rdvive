@@ -16,7 +16,8 @@
     "VREffectsHelperMixin",
     "RenderPassMixin",
     "VRArmHelperMixin",
-    "PauseScreenMixin"
+    "PauseScreenMixin",
+    "EntityRenderDispatcherGuardMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }
