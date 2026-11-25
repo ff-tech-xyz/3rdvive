@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-/** Minecraft 26.2 Camera.alignWithEntity distance and getMaxZoom, using a VR pivot and direction. */
+/** Minecraft 26.3 Camera.alignWithEntity distance and getMaxZoom, using a VR pivot and direction. */
 public final class VanillaThirdPerson {
     private VanillaThirdPerson() {}
 
