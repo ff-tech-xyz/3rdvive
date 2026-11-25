@@ -20,8 +20,15 @@ public final class ThirdViveAnchor {
         return data.hmd.getPosition().add(back.x, back.y, back.z);
     }
 
+    /**
+     * Moves the room so the head sits on the character's eye. Sideways it lines up Vivecraft's own
+     * head pivot, the same point roomscale walking moves the player to, so the two never fight.
+     * Height uses the camera's head center so the view height is unchanged.
+     */
     private static Vec3 pin(VRData data, Vec3 eye) {
-        data.origin = data.origin.add(eye.subtract(headCenter(data)));
+        Vec3 pivot = data.getHeadPivot();
+        Vec3 center = headCenter(data);
+        data.origin = data.origin.add(eye.x - pivot.x, eye.y - center.y, eye.z - pivot.z);
         return data.origin;
     }
 

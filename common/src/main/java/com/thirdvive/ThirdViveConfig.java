@@ -15,6 +15,7 @@ public final class ThirdViveConfig {
     public boolean enabled = true;
     public double distance = 0.0; // 0 uses Minecraft's camera_distance (including scale and vehicle)
     public boolean firstPersonInMenus = true;
+    public boolean debugLog = true; // test builds: logs movement state once a second in third person
 
     public static ThirdViveConfig load(Path configDir) {
         Path path = configDir.resolve("thirdvive.json");

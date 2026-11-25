@@ -11,7 +11,7 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 - Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.2.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.2.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
+Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.2.1.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.2.1.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
 
 Configuration is generated at `config/thirdvive.json` on first launch. `enabled` turns the add-on off without uninstalling it; `distance` defaults to 0 (vanilla camera distance, including player scale and vehicle), or accepts an unscaled override of 0.25–32 blocks. Existing configs with `distance: 4.0` keep that explicit override until changed to 0. `firstPersonInMenus` defaults to true. Edit while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
 

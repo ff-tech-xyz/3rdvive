@@ -1,8 +1,7 @@
 package com.thirdvive.mixin;
 
 import com.thirdvive.ThirdViveAnchor;
-import com.thirdvive.ThirdViveState;
-import net.minecraft.client.player.LocalPlayer;
+import com.thirdvive.ThirdViveDebug;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,11 +11,6 @@ import org.vivecraft.client_vr.gameplay.VRPlayer;
 
 @Mixin(VRPlayer.class)
 public class VRPlayerMixin {
-    @Inject(method = "doPlayerMoveInRoom", at = @At("HEAD"), cancellable = true)
-    private void thirdvive$noRoomscaleWalk(LocalPlayer player, CallbackInfo ci) {
-        if (ThirdViveState.locked()) ci.cancel();
-    }
-
     @Inject(method = "preTick", at = @At("HEAD"))
     private void thirdvive$restoreOnExit(CallbackInfo ci) {
         ThirdViveAnchor.beforePreTick((VRPlayer) (Object) this);
@@ -34,6 +28,7 @@ public class VRPlayerMixin {
         target = "Lorg/vivecraft/client_vr/gameplay/VRPlayer;doPermanentLookOverride(Lnet/minecraft/client/player/LocalPlayer;Lorg/vivecraft/client_vr/VRData;)V"))
     private void thirdvive$pinPost(CallbackInfo ci) {
         ThirdViveAnchor.onPostTick((VRPlayer) (Object) this);
+        ThirdViveDebug.tick((VRPlayer) (Object) this);
     }
 
     @Inject(method = "preRender", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD,

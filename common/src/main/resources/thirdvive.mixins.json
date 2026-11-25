@@ -15,7 +15,8 @@
     "NameTagFacingMixin",
     "VREffectsHelperMixin",
     "RenderPassMixin",
-    "VRArmHelperMixin"
+    "VRArmHelperMixin",
+    "PauseScreenMixin"
   ],
   "injectors": {"defaultRequire": 1}
 }
