@@ -35,6 +35,7 @@ public final class ThirdViveAnchor {
     /** Restore Vivecraft's floor alignment before it constructs the next tick's poses. */
     public static void beforePreTick(VRPlayer vr) {
         LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) ThirdViveRealPos.clear();
         boolean locked = player != null && ThirdViveState.locked();
         if (wasLocked && !locked && player != null
             && ClientDataHolderVR.getInstance().sneakTracker.sneakCounter <= 0) {

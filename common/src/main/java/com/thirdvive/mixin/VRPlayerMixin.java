@@ -2,6 +2,7 @@ package com.thirdvive.mixin;
 
 import com.thirdvive.ThirdViveAnchor;
 import com.thirdvive.ThirdViveDebug;
+import com.thirdvive.ThirdViveRealPos;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +14,7 @@ import org.vivecraft.client_vr.gameplay.VRPlayer;
 public class VRPlayerMixin {
     @Inject(method = "preTick", at = @At("HEAD"))
     private void thirdvive$restoreOnExit(CallbackInfo ci) {
+        ThirdViveRealPos.restoreIfMoved();
         ThirdViveAnchor.beforePreTick((VRPlayer) (Object) this);
     }
 

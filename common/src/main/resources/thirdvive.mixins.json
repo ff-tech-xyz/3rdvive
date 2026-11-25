@@ -17,7 +17,8 @@
     "RenderPassMixin",
     "VRArmHelperMixin",
     "PauseScreenMixin",
-    "EntityRenderDispatcherGuardMixin"
+    "EntityRenderDispatcherGuardMixin",
+    "EntityEyeHeightAccessor"
   ],
   "injectors": {"defaultRequire": 1}
 }
