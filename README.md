@@ -6,12 +6,12 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 
 ## Requirements
 
-- Minecraft 26.2 and Java 25.
-- Fabric Loader 0.19.3 with Fabric API 0.152.1+26.2, **or** NeoForge 26.2.0.1-beta.
-- Vivecraft 26.2-1.3.15, installed on the client. The supported range is 26.2-1.3.15 up to (but not including) 26.2-1.4.0.
+- Minecraft 26.3 and Java 25.
+- Fabric Loader 0.19.5 or newer, **or** NeoForge 26.3.0.118 (NeoForge jar not yet launch-tested on 26.3).
+- Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.2-0.1.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.2-0.1.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
+Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.2.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.2.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
 
 Configuration is generated at `config/thirdvive.json` on first launch. `enabled` turns the add-on off without uninstalling it; `distance` defaults to 0 (vanilla camera distance, including player scale and vehicle), or accepts an unscaled override of 0.25–32 blocks. Existing configs with `distance: 4.0` keep that explicit override until changed to 0. `firstPersonInMenus` defaults to true. Edit while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
 
