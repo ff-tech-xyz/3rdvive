@@ -1,7 +1,6 @@
 package com.thirdvive.mixin;
 
 import com.thirdvive.ThirdViveEyes;
-import com.thirdvive.ThirdViveRealPos;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.client.DeltaTracker;
@@ -14,13 +13,11 @@ public class VRPassHelperMixin {
     @WrapMethod(method = "renderSingleView")
     private static void thirdvive$markPass(RenderPass eye, DeltaTracker.Timer delta, boolean renderLevel,
                                              Operation<Void> original) {
-        ThirdViveRealPos.save();
         ThirdViveEyes.beginPass(eye);
         try {
             original.call(eye, delta, renderLevel);
         } finally {
             ThirdViveEyes.endPass();
-            ThirdViveRealPos.restore();
         }
     }
 }
