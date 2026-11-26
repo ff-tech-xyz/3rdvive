@@ -2,7 +2,6 @@ package com.thirdvive.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.thirdvive.ThirdVive;
-import com.thirdvive.ThirdViveCameraRig;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -31,10 +30,6 @@ public class PauseScreenMixin {
             CameraType next = mc.options.getCameraType().cycle();
             mc.options.setCameraType(next);
             button.setMessage(thirdvive$label(next));
-        }).width(98).build());
-        rowHelper.addChild(Button.builder(Component.literal("Recenter Camera"), button -> {
-            ThirdViveCameraRig.recenter();
-            mc.gui.setScreen(null);
         }).width(98).build());
     }
 

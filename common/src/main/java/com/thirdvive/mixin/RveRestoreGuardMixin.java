@@ -1,12 +1,12 @@
 package com.thirdvive.mixin;
 
 import com.thirdvive.ThirdVive;
+import com.thirdvive.ThirdViveRve;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -24,24 +24,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(value = GameRenderer.class, priority = 1200)
 public class RveRestoreGuardMixin {
-    @Unique
-    private boolean thirdvive$saved;
-
     @Dynamic("merged from Vivecraft GameRendererVRMixin")
     @Inject(method = "vivecraft$cacheRVEPos", at = @At("HEAD"))
     private void thirdvive$trackSave(Entity entity, CallbackInfo ci) {
         // Same check Vivecraft uses before it saves.
-        if (Minecraft.getInstance().getCameraEntity() != null) this.thirdvive$saved = true;
+        if (Minecraft.getInstance().getCameraEntity() != null) ThirdViveRve.saved = true;
     }
 
     @Dynamic("merged from Vivecraft GameRendererVRMixin")
     @Inject(method = "vivecraft$restoreRVEPos", at = @At("HEAD"), cancellable = true)
     private void thirdvive$onlyRestoreWhatWasSaved(Entity entity, CallbackInfo ci) {
         if (entity == null) return; // Vivecraft does nothing here either
-        if (!this.thirdvive$saved && ThirdVive.config != null && ThirdVive.config.enabled) {
+        if (!ThirdViveRve.saved && ThirdVive.config != null && ThirdVive.config.enabled) {
             ci.cancel(); // nothing fresh saved: putting the player "back" would move it to an old spot
             return;
         }
-        this.thirdvive$saved = false;
+        ThirdViveRve.saved = false;
     }
 }

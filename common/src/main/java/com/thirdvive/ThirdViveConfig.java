@@ -16,11 +16,6 @@ public final class ThirdViveConfig {
     public double distance = 0.0; // 0 uses Minecraft's camera_distance (including scale and vehicle)
     public boolean firstPersonInMenus = true;
     public boolean debugLog = true; // test builds: movement state once a second, plus every snap-back with its cause
-    public Follow follow = Follow.BODY; // BODY: camera trails the character; ROOM: turns only when you snap/smooth turn
-    public double followSeconds = 0.3; // how slowly the camera swings round behind the character (0 = instantly)
-    public float cameraPitch = 15.0F; // degrees the camera sits above the character, looking down
-
-    public enum Follow { BODY, ROOM }
 
     public static ThirdViveConfig load(Path configDir) {
         Path path = configDir.resolve("thirdvive.json");
@@ -37,13 +32,6 @@ public final class ThirdViveConfig {
                 ThirdViveConfig config = GSON.fromJson(reader, ThirdViveConfig.class);
                 if (config == null || !Double.isFinite(config.distance) || config.distance < 0 || (config.distance > 0 && config.distance < 0.25) || config.distance > 32) {
                     throw new IllegalArgumentException("distance must be 0 (vanilla) or between 0.25 and 32 blocks");
-                }
-                if (config.follow == null) config.follow = Follow.BODY;
-                if (!Double.isFinite(config.followSeconds) || config.followSeconds < 0 || config.followSeconds > 5) {
-                    throw new IllegalArgumentException("followSeconds must be between 0 and 5");
-                }
-                if (!Float.isFinite(config.cameraPitch) || config.cameraPitch < -45 || config.cameraPitch > 75) {
-                    throw new IllegalArgumentException("cameraPitch must be between -45 and 75 degrees");
                 }
                 return config;
             }
