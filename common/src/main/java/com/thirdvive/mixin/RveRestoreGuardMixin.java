@@ -1,6 +1,6 @@
 package com.thirdvive.mixin;
 
-import com.thirdvive.ThirdVive;
+import com.thirdvive.ThirdViveState;
 import com.thirdvive.ThirdViveRve;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -20,7 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  *
  * This keeps a copy of Vivecraft's own "saved" flag, using the exact same rules, and skips a
  * put-back when nothing is saved. Every Vivecraft caller either saved first, or runs right after a
- * put-back that already restored the same position, so nothing else changes.
+ * put-back that already restored the same position, so nothing else changes. Only in third person;
+ * first person is left exactly as Vivecraft does it.
  */
 @Mixin(value = GameRenderer.class, priority = 1200)
 public class RveRestoreGuardMixin {
@@ -35,7 +36,7 @@ public class RveRestoreGuardMixin {
     @Inject(method = "vivecraft$restoreRVEPos", at = @At("HEAD"), cancellable = true)
     private void thirdvive$onlyRestoreWhatWasSaved(Entity entity, CallbackInfo ci) {
         if (entity == null) return; // Vivecraft does nothing here either
-        if (!ThirdViveRve.saved && ThirdVive.config != null && ThirdVive.config.enabled) {
+        if (!ThirdViveRve.saved && ThirdViveState.active()) {
             ci.cancel(); // nothing fresh saved: putting the player "back" would move it to an old spot
             return;
         }

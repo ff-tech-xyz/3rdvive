@@ -13,8 +13,7 @@ import net.minecraft.world.phys.Vec3;
 public final class VanillaThirdPerson {
     private VanillaThirdPerson() {}
 
-    public static float distance(Entity entity, double override) {
-        if (override > 0) return (float) override;
+    public static float distance(Entity entity) {
         float distance = 4.0F;
         float scale = 1.0F;
         if (entity instanceof LivingEntity living) {

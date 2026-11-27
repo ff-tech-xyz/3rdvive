@@ -23,8 +23,7 @@
     "RadialHandlerMixin",
     "RadialHandlerAccessor",
     "ArmsRenderStateMixin",
-    "RveRestoreGuardMixin",
-    "SnapDetectorMixin"
+    "RveRestoreGuardMixin"
   ],
   "injectors": {
     "defaultRequire": 1

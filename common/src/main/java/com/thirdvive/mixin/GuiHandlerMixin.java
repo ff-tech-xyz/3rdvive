@@ -46,20 +46,20 @@ public class GuiHandlerMixin {
     @ModifyExpressionValue(method = "extractGui", at = @At(value = "FIELD",
         target = "Lorg/vivecraft/client_vr/settings/VRSettings;vrHudLockMode:Lorg/vivecraft/client_vr/settings/VRSettings$HUDLock;"))
     private static VRSettings.HUDLock thirdvive$hudOnCamera(VRSettings.HUDLock mode) {
-        return ThirdViveState.hudOnCamera() ? VRSettings.HUDLock.HEAD : mode;
+        return ThirdViveState.uiOnCamera() ? VRSettings.HUDLock.HEAD : mode;
     }
 
     @WrapOperation(method = "extractGui", at = @At(value = "FIELD", opcode = Opcodes.GETFIELD,
         target = "Lorg/vivecraft/client_vr/VRData;hmd:Lorg/vivecraft/client_vr/VRData$VRDevicePose;"))
     private static VRData.VRDevicePose thirdvive$hudPosition(VRData data, Operation<VRData.VRDevicePose> original) {
         VRData.VRDevicePose real = original.call(data);
-        return ThirdViveState.hudOnCamera() ? ThirdViveCamera.camera(data) : real;
+        return ThirdViveState.uiOnCamera() ? ThirdViveCamera.camera(data) : real;
     }
 
     @ModifyExpressionValue(method = "extractGui", at = @At(value = "FIELD",
         target = "Lorg/vivecraft/client_vr/provider/MCVR;hmdRotation:Lorg/joml/Matrix4f;"))
     private static Matrix4f thirdvive$hudTurn(Matrix4f real) {
-        if (!ThirdViveState.hudOnCamera()) return real;
+        if (!ThirdViveState.uiOnCamera()) return real;
         VRData data = ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render;
         return ThirdViveCamera.roomMatrix(data, ThirdViveCamera.camera(data));
     }

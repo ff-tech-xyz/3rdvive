@@ -19,7 +19,7 @@ public class GameRendererRveMixin {
     @Dynamic("merged from Vivecraft GameRendererVRMixin")
     @WrapMethod(method = "vivecraft$setupRVE")
     private void thirdvive$realEyeForEntity(Operation<Void> original) {
-        if (!ThirdViveEyes.inPass() && ThirdViveState.locked()) return;
+        if (!ThirdViveEyes.inPass() && ThirdViveState.active()) return;
         ThirdViveEyes.runBypassed(() -> original.call());
     }
 }

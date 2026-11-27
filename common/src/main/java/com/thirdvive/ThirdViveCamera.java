@@ -12,7 +12,8 @@ import org.vivecraft.client_vr.gameplay.VRPlayer;
 /**
  * Where the third-person camera is, and how to move things "with" it.
  *
- * Think of the camera as a copy of your real head placed a few blocks behind (or in front of) it. Anything
+ * Think of the camera as a copy of your real head placed a few blocks behind (or in front of) your character, the
+ * same distance vanilla third person uses. Anything
  * near your real head, like your eyes or your hands, can be moved the same way, so it keeps the same spot
  * relative to the camera that it really has relative to your head. The eyes use this to draw the view, and
  * menus, the HUD and the menu hands use it so they sit in front of the camera instead of at your character.
@@ -37,20 +38,25 @@ public final class ThirdViveCamera {
     /** Called at the start of each frame, so the camera follows the smoothed character position. */
     public static void setPartialTick(float tick) { partialTick = tick; }
 
+    /** Head center: a point 0.1 m behind the headset, the pivot your eyes turn around. */
+    public static Vec3 headCenter(VRData data) {
+        Vector3f back = data.hmd.getMatrix().transformDirection(new Vector3f(0, 0, 0.1F * data.worldScale));
+        return data.hmd.getPosition().add(back.x, back.y, back.z);
+    }
+
     /**
-     * The point the camera swings around: the character's eyes, in {@code data}'s own units.
-     * With the character lock on, your head is already pinned there, so the head itself is used.
-     * With it off, your real head can be a little away from the character (roomscale, walls), and
-     * the camera still stays on the character.
+     * The point the camera swings around: the character's eyes, like vanilla third person, in {@code data}'s
+     * own units. Your real head can be a little away from the character (roomscale, walls); the camera stays
+     * on the character.
      */
     public static Vec3 pivot(VRData data) {
-        Vec3 head = ThirdViveAnchor.headCenter(data);
+        Vec3 head = headCenter(data);
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || ThirdViveState.anchored()) return head;
+        if (player == null) return head;
         VRData world = worldData();
         Vec3 eye = world == ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render
             ? player.getEyePosition(partialTick) : player.getEyePosition();
-        Vec3 worldHead = ThirdViveAnchor.headCenter(world);
+        Vec3 worldHead = ThirdViveCamera.headCenter(world);
         // head -> eye in world blocks, turned into real meters (room), then into this data's units
         Vector3f offset = new Vector3f((float) (eye.x - worldHead.x), (float) (eye.y - worldHead.y),
             (float) (eye.z - worldHead.z))
@@ -59,14 +65,14 @@ public final class ThirdViveCamera {
         return head.add(offset.x, offset.y, offset.z);
     }
 
-    /** Camera distance from the head, in {@code data}'s own units. Walls are checked once per frame. */
+    /** Camera distance from the pivot (vanilla's, including scale and vehicle), in {@code data}'s own units. Walls are checked once per frame. */
     public static float distance(VRData data) {
         long currentFrame = ClientDataHolderVR.getInstance().frameIndex;
         VRData world = worldData();
         boolean front = ThirdViveState.front();
         if (currentFrame != frame || world != frameData || front != frameFront) {
             Minecraft mc = Minecraft.getInstance();
-            float wanted = VanillaThirdPerson.distance(mc.player, ThirdVive.config.distance);
+            float wanted = VanillaThirdPerson.distance(mc.player);
             frameDistance = VanillaThirdPerson.maxZoom(mc.level, mc.player, pivot(world),
                 direction(world, front), wanted);
             frameScale = world.worldScale;

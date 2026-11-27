@@ -1,6 +1,6 @@
 # 3rdVive
 
-A client-side add-on for Vivecraft that moves the headset view to Minecraft's third-person camera. In VR, the configured perspective key cycles first person, back view and front view; aiming, interactions and network pose still use the real headset and controllers. This is experimental and may be uncomfortable.
+A client-side add-on for Vivecraft that makes Minecraft's third person work in VR, as close to vanilla as possible: the camera sits where vanilla's would (behind your character's eyes, vanilla distance, pulled in by walls) and turns with your head. Movement, roomscale walking, aiming and controllers work exactly like normal Vivecraft. In VR, the configured perspective key cycles first person, back view and front view; aiming, interactions and network pose still use the real headset and controllers. This is experimental and may be uncomfortable.
 
 **Status:** experimental headset test build. Both loader jars compile and both revised clients reach the main menu under a virtual display. Headset behavior (stereo depth, avatar items, clipping, multiplayer interactions) has **not** been validated. This is not a release.
 
@@ -11,7 +11,7 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 - Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.4.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.4.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
+Build with `./gradlew clean build mergedJar`. Install `build/libs/thirdvive-26.3-0.5.0.jar`; the same jar works on Fabric and NeoForge.
 
 ## Switching perspective
 
@@ -19,23 +19,20 @@ Use Minecraft's normal perspective key (F5 by default) in or out of VR, or **Tog
 
 ## Menus and HUD in third person
 
-Menus, the VR keyboard (laser or physical) and the radial menu open in front of the third-person camera instead of snapping you back to first person. While one is open, grey menu hands appear next to the camera, in the same spot relative to the camera that your real hands have relative to your head, and you point and type from there. An open menu slides along with the camera so it stays in reach when you turn your head. Container screens shown over their block (Vivecraft's "appear over block" option) stay over the block.
+The view never snaps back to first person. Where menus go depends on `hudOnCamera`:
 
-With no menu open, the HUD floats in front of the camera (like Vivecraft's "Head" HUD lock) instead of sitting on your wrist, without changing your Vivecraft HUD setting.
+- **On (default):** menus (including chests and your inventory), the VR keyboard and the radial menu open in front of the third-person camera. Grey menu hands appear next to the camera, in the same spot relative to the camera that your real hands have relative to your head, and you point and type from there. An open menu slides along with the camera so it stays in reach. Container screens shown over their block (Vivecraft's "appear over block" option) stay over the block. With no menu open, the HUD floats in front of the camera, without changing your Vivecraft HUD setting.
+- **Off:** menus, the keyboard, the radial menu and the HUD appear where they would in first person (at your character), and you point at them with your real hands.
 
 ## Configuration
 
 `config/thirdvive.json` is created on first launch. The game also writes it once (after adding the radial button), so edit it while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
 
-- `enabled` turns the add-on off without uninstalling it.
-- `distance`: 0 (default) uses vanilla camera distance, including player scale and vehicle, or an unscaled override of 0.25–32 blocks.
-- `firstPersonInMenus` (default false): snap back to first person while a menu or keyboard is open.
-- `hudOnCamera` (default true): the HUD floats in front of the camera in third person.
-- `lockToCharacter` (default false): in third person, pin your head to the character so walking around your real room doesn't move it. When false, roomscale walking works as in normal Vivecraft.
-- `radialButtonAdded`: set after the radial button was added once.
-- `debugLog` (default false): logs movement state once a second in third person.
+- `enabled` (default true) turns the add-on off without uninstalling it.
+- `hudOnCamera` (default true): see above.
+- `radialButtonAdded`: set by the game after it tried once to add the radial button. Leave it alone.
 
-Config files from 0.2.x are updated once on first launch: `firstPersonInMenus` and `debugLog` are set to false (their old defaults were true).
+Settings from older versions (`distance`, `firstPersonInMenus`, `lockToCharacter`, `debugLog`, `rememberPerspective`, `perspective`, `configVersion`) are no longer used and are ignored.
 
 [Requirements](docs/REQUIREMENTS.md), [build plan and VR test checklist](docs/BUILD_PLAN.md), and the original [developer proposal](docs/reference/developer-spec.txt) are retained. The current implementation substitutes LEFT/RIGHT/CENTER poses only during the matching Vivecraft render pass and leaves real headset/controller/tick poses alone; the original camera relocation is removed. The proposal describes an earlier design, not the current build.
 

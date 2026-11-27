@@ -17,12 +17,12 @@ import org.vivecraft.client_vr.provider.ControllerType;
 public class RadialHandlerMixin {
     @WrapMethod(method = "processGui")
     private static void thirdvive$pointFromCamera(Operation<Void> original) {
-        ThirdViveUi.processRadial(ThirdViveState.radialOnCamera(), () -> original.call());
+        ThirdViveUi.processRadial(ThirdViveState.uiOnCamera(), () -> original.call());
     }
 
     @WrapMethod(method = "orientOverlay")
     private static void thirdvive$openAtCamera(ControllerType controller, Operation<Void> original) {
-        ThirdViveUi.openRadial(ThirdViveState.radialOnCamera(), () -> original.call(controller));
+        ThirdViveUi.openRadial(ThirdViveState.uiOnCamera(), () -> original.call(controller));
     }
 
     @WrapOperation(method = "orientOverlay", at = @At(value = "FIELD", opcode = Opcodes.GETFIELD,

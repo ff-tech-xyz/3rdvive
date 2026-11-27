@@ -16,6 +16,6 @@ public final class ThirdVive {
 
     public static void init(Path configDir) {
         config = ThirdViveConfig.load(configDir);
-        LOGGER.info("3rdVive initialized (enabled={}, distance={})", config.enabled, config.distance);
+        LOGGER.info("3rdVive initialized (enabled={}, hudOnCamera={})", config.enabled, config.hudOnCamera);
     }
 }

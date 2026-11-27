@@ -8,55 +8,40 @@ import org.vivecraft.client_vr.gameplay.screenhandlers.KeyboardHandler;
 import org.vivecraft.client_vr.gameplay.screenhandlers.RadialHandler;
 import org.vivecraft.client_vr.MethodHolder;
 
-/** Third-person tracking lock and the separate render-pass camera decision. */
+/** When the third-person view is on, and where menus and the HUD go. */
 public final class ThirdViveState {
     private ThirdViveState() {}
 
-    public static boolean locked() {
+    /** 3rdVive is enabled, VR is running, you are in a world, and the perspective is third person. */
+    public static boolean active() {
         Minecraft mc = Minecraft.getInstance();
         return ThirdVive.config != null && ThirdVive.config.enabled && VRState.VR_RUNNING
             && mc.level != null && mc.player != null
             && !mc.options.getCameraType().isFirstPerson() && !MethodHolder.isInMenuRoom();
     }
 
-    /** Optional (lockToCharacter): your head is pinned to the character, so walking around your room doesn't move you. */
-    public static boolean anchored() {
-        return locked() && ThirdVive.config.lockToCharacter;
-    }
-
-    public static boolean active() {
-        Minecraft mc = Minecraft.getInstance();
-        return locked()
-            && (!ThirdVive.config.firstPersonInMenus || (mc.gui.screen() == null && !KeyboardHandler.SHOWING));
-    }
-
+    /** {@link #active()} and this is one of the headset's eye views. */
     public static boolean activeForPass(RenderPass pass) {
         return active() && RenderPass.isFirstPerson(pass)
             && ClientDataHolderVR.getInstance().vrPlayer != null;
     }
 
+    /** Front view (the camera looks back at you). */
     public static boolean front() {
         return Minecraft.getInstance().options.getCameraType().isMirrored();
     }
 
-    /** Menus and the keyboard open in front of the camera (instead of snapping back to first person). */
+    /**
+     * hudOnCamera: the HUD, menus (including chests and your inventory), the keyboard and the radial menu sit in
+     * front of the camera. Off: they appear where they would in first person; the view stays in third person.
+     */
     public static boolean uiOnCamera() {
-        return locked() && !ThirdVive.config.firstPersonInMenus;
-    }
-
-    /** The radial menu never snaps to first person, so it follows the camera whenever the view does. */
-    public static boolean radialOnCamera() {
-        return active();
-    }
-
-    /** The no-menu HUD floats in front of the camera instead of on your wrist. */
-    public static boolean hudOnCamera() {
         return active() && ThirdVive.config.hudOnCamera;
     }
 
-    /** A menu, keyboard or radial menu is open and drawn at the camera, so the menu hands go there too. */
+    /** A menu, keyboard or radial menu is open in front of the camera, so the menu hands are drawn there too. */
     public static boolean uiShowingForPass(RenderPass pass) {
-        return activeForPass(pass)
+        return activeForPass(pass) && ThirdVive.config.hudOnCamera
             && (Minecraft.getInstance().gui.screen() != null || KeyboardHandler.SHOWING || RadialHandler.isShowing());
     }
 }

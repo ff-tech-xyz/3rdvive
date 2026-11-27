@@ -16,20 +16,13 @@ import java.nio.file.StandardCopyOption;
  * The game also writes this file (once, after adding the radial menu button), so edit it while the game is stopped.
  */
 public final class ThirdViveConfig {
-    /** Version 2: menus/HUD follow the camera, so the old first-person-in-menus fallback is turned off. */
-    static final int VERSION = 2;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private transient Path path;
 
-    public int configVersion = 0; // missing in old files, which marks them for the one-time update
     public boolean enabled = true;
-    public double distance = 0.0; // 0 uses Minecraft's camera_distance (including scale and vehicle)
-    public boolean firstPersonInMenus = false; // true: snap to first person while a menu or keyboard is open
-    public boolean hudOnCamera = true; // true: in third person the HUD floats in front of the camera, not on the wrist
-    public boolean lockToCharacter = false; // true: in third person your head is pinned to your character, so walking around your room doesn't move you
+    public boolean hudOnCamera = true; // true: HUD, menus, keyboard and radial menu sit in front of the camera; false: where they would be in first person
     public boolean radialButtonAdded = false; // set once the perspective button was put in the radial menu
-    public boolean debugLog = false; // logs movement state once a second in third person
 
     public static ThirdViveConfig load(Path configDir) {
         Path path = configDir.resolve("thirdvive.json");
@@ -37,7 +30,6 @@ public final class ThirdViveConfig {
             Files.createDirectories(path.getParent());
             if (!Files.exists(path)) {
                 ThirdViveConfig defaults = new ThirdViveConfig();
-                defaults.configVersion = VERSION;
                 defaults.path = path;
                 defaults.write();
                 return defaults;
@@ -46,18 +38,8 @@ public final class ThirdViveConfig {
             try (Reader reader = Files.newBufferedReader(path)) {
                 config = GSON.fromJson(reader, ThirdViveConfig.class);
             }
-            if (config == null || !Double.isFinite(config.distance) || config.distance < 0 || (config.distance > 0 && config.distance < 0.25) || config.distance > 32) {
-                throw new IllegalArgumentException("distance must be 0 (vanilla) or between 0.25 and 32 blocks");
-            }
+            if (config == null) throw new IllegalArgumentException("file is empty");
             config.path = path;
-            if (config.configVersion < VERSION) {
-                // Old builds wrote firstPersonInMenus=true and debugLog=true as defaults; menus now work in third person.
-                config.firstPersonInMenus = false;
-                config.debugLog = false;
-                config.configVersion = VERSION;
-                config.write();
-                ThirdVive.LOGGER.info("Updated {} to config version {}", path, VERSION);
-            }
             return config;
         } catch (IOException | JsonSyntaxException | IllegalArgumentException e) {
             throw new IllegalStateException("Cannot load " + path + "; fix the file before starting 3rdVive", e);
