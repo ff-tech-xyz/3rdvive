@@ -16,9 +16,17 @@
     "VREffectsHelperMixin",
     "RenderPassMixin",
     "VRArmHelperMixin",
-    "PauseScreenMixin",
     "EntityRenderDispatcherGuardMixin",
-    "EntityEyeHeightAccessor"
+    "EntityEyeHeightAccessor",
+    "OptionsCameraMixin",
+    "MinecraftStartupMixin",
+    "GuiHandlerMixin",
+    "KeyboardHandlerMixin",
+    "RadialHandlerMixin",
+    "RadialHandlerAccessor",
+    "ArmsRenderStateMixin"
   ],
-  "injectors": {"defaultRequire": 1}
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

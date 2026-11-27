@@ -11,11 +11,31 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 - Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.2.3.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.2.3.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
+Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.3.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.3.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
 
-Configuration is generated at `config/thirdvive.json` on first launch. `enabled` turns the add-on off without uninstalling it; `distance` defaults to 0 (vanilla camera distance, including player scale and vehicle), or accepts an unscaled override of 0.25–32 blocks. Existing configs with `distance: 4.0` keep that explicit override until changed to 0. `firstPersonInMenus` defaults to true. Edit while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
+## Switching perspective
 
-The perspective key no longer cycles Vivecraft's desktop mirror mode while the add-on is enabled. Change the mirror mode in Vivecraft's settings instead.
+Use Minecraft's normal perspective key (F5 by default) in or out of VR, or **Toggle Perspective** in Vivecraft's radial menu. On first launch 3rdVive adds that button to the radial menu once (if the 8-button circle is full it grows to 10); if you remove it, it stays removed. The perspective is the same in and out of VR and is remembered across restarts. While the add-on is enabled the perspective key no longer cycles Vivecraft's desktop mirror mode; change that in Vivecraft's settings.
+
+## Menus and HUD in third person
+
+Menus, the VR keyboard (laser or physical) and the radial menu open in front of the third-person camera instead of snapping you back to first person. While one is open, grey menu hands appear next to the camera, in the same spot relative to the camera that your real hands have relative to your head, and you point and type from there. An open menu slides along with the camera so it stays in reach when you turn your head. Container screens shown over their block (Vivecraft's "appear over block" option) stay over the block.
+
+With no menu open, the HUD floats in front of the camera (like Vivecraft's "Head" HUD lock) instead of sitting on your wrist, without changing your Vivecraft HUD setting.
+
+## Configuration
+
+`config/thirdvive.json` is created on first launch. The game also writes it (to remember your perspective), so edit it while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
+
+- `enabled` turns the add-on off without uninstalling it.
+- `distance`: 0 (default) uses vanilla camera distance, including player scale and vehicle, or an unscaled override of 0.25–32 blocks.
+- `firstPersonInMenus` (default false): snap back to first person while a menu or keyboard is open.
+- `hudOnCamera` (default true): the HUD floats in front of the camera in third person.
+- `rememberPerspective` (default true) and `perspective`: the remembered perspective.
+- `radialButtonAdded`: set after the radial button was added once.
+- `debugLog` (default false): logs movement state once a second in third person.
+
+Config files from 0.2.x are updated once on first launch: `firstPersonInMenus` and `debugLog` are set to false (their old defaults were true).
 
 [Requirements](docs/REQUIREMENTS.md), [build plan and VR test checklist](docs/BUILD_PLAN.md), and the original [developer proposal](docs/reference/developer-spec.txt) are retained. The current implementation substitutes LEFT/RIGHT/CENTER poses only during the matching Vivecraft render pass and leaves real headset/controller/tick poses alone; the original camera relocation is removed. The proposal describes an earlier design, not the current build.
 
