@@ -11,7 +11,7 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 - Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.3.1.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.3.1.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
+Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.4.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.4.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
 
 ## Switching perspective
 

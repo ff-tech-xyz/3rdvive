@@ -16,15 +16,15 @@
     "VREffectsHelperMixin",
     "RenderPassMixin",
     "VRArmHelperMixin",
-    "EntityRenderDispatcherGuardMixin",
-    "EntityEyeHeightAccessor",
     "OptionsCameraMixin",
     "MinecraftStartupMixin",
     "GuiHandlerMixin",
     "KeyboardHandlerMixin",
     "RadialHandlerMixin",
     "RadialHandlerAccessor",
-    "ArmsRenderStateMixin"
+    "ArmsRenderStateMixin",
+    "RveRestoreGuardMixin",
+    "SnapDetectorMixin"
   ],
   "injectors": {
     "defaultRequire": 1
