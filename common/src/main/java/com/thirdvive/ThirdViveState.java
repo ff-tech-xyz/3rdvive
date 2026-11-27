@@ -20,6 +20,11 @@ public final class ThirdViveState {
             && !mc.options.getCameraType().isFirstPerson() && !MethodHolder.isInMenuRoom();
     }
 
+    /** lockMovement: your head is pinned to the character, so walking around your room doesn't move you. */
+    public static boolean movementLocked() {
+        return active() && ThirdVive.config.lockMovement;
+    }
+
     /** {@link #active()} and this is one of the headset's eye views. */
     public static boolean activeForPass(RenderPass pass) {
         return active() && RenderPass.isFirstPerson(pass)

@@ -46,13 +46,13 @@ public final class ThirdViveCamera {
 
     /**
      * The point the camera swings around: the character's eyes, like vanilla third person, in {@code data}'s
-     * own units. Your real head can be a little away from the character (roomscale, walls); the camera stays
-     * on the character.
+     * own units. With lockMovement your head is already pinned there, so the head itself is used. Without it
+     * your real head can be a little away from the character (roomscale, walls); the camera stays on the character.
      */
     public static Vec3 pivot(VRData data) {
         Vec3 head = headCenter(data);
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null) return head;
+        if (player == null || ThirdViveState.movementLocked()) return head;
         VRData world = worldData();
         Vec3 eye = world == ClientDataHolderVR.getInstance().vrPlayer.vrdata_world_render
             ? player.getEyePosition(partialTick) : player.getEyePosition();
