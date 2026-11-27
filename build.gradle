@@ -2,5 +2,36 @@ plugins {
     // see https://maven.fabricmc.net/fabric-loom/fabric-loom.gradle.plugin/maven-metadata.xml for new versions
     id 'net.fabricmc.fabric-loom' version '1.16.3' apply false
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
-    id 'net.neoforged.moddev' version '2.0.141' apply false
+    id 'net.neoforged.moddev' version '2.0.149' apply false
+}
+// One jar that loads on both Fabric and NeoForge.
+// Minecraft 26.x isn't obfuscated, so both loaders see the same class names and
+// the shared code compiled for each side is byte-for-byte identical. Each loader
+// only reads its own metadata (fabric.mod.json / META-INF/neoforge.mods.toml),
+// its own nested jars (META-INF/jars / META-INF/jarjar) and its own entry class.
+tasks.register('mergedJar', Jar) {
+    group = 'build'
+    description = 'Builds thirdvive-<mc>-<version>.jar that works on Fabric and NeoForge.'
+    def fabricJar = project(':fabric').tasks.named('jar')
+    def neoJar = project(':neoforge').tasks.named('jar')
+    dependsOn(fabricJar, neoJar)
+
+    archiveBaseName = mod_id
+    archiveVersion = "${minecraft_version}-${version}"
+    destinationDirectory = layout.buildDirectory.dir('libs')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from({ zipTree(fabricJar.get().archiveFile) }) { exclude 'META-INF/MANIFEST.MF' }
+    from({ zipTree(neoJar.get().archiveFile) }) { exclude 'META-INF/MANIFEST.MF' }
+
+    // Fabric's manifest is a superset of NeoForge's (it adds Fabric-Mapping-Namespace etc.), so copy it.
+    doFirst {
+        def jf = new java.util.jar.JarFile(fabricJar.get().archiveFile.get().asFile)
+        try {
+            jf.manifest.mainAttributes.each { k, v -> manifest.attributes((k.toString()): v.toString()) }
+        } finally {
+            jf.close()
+        }
+        manifest.attributes('Implementation-Title': mod_name)
+    }
 }

@@ -11,11 +11,11 @@ A client-side add-on for Vivecraft that moves the headset view to Minecraft's th
 - Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.3.0.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.3.0.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
+Build with `./gradlew clean build`. The installable jars are `fabric/build/libs/thirdvive-fabric-26.3-0.3.1.jar` and `neoforge/build/libs/thirdvive-neoforge-26.3-0.3.1.jar`; don't install the sources or javadoc jars. Use the jar matching your loader.
 
 ## Switching perspective
 
-Use Minecraft's normal perspective key (F5 by default) in or out of VR, or **Toggle Perspective** in Vivecraft's radial menu. On first launch 3rdVive adds that button to the radial menu once (if the 8-button circle is full it grows to 10); if you remove it, it stays removed. The perspective is the same in and out of VR and is remembered across restarts. While the add-on is enabled the perspective key no longer cycles Vivecraft's desktop mirror mode; change that in Vivecraft's settings.
+Use Minecraft's normal perspective key (F5 by default) in or out of VR, or **Toggle Perspective** in Vivecraft's radial menu. Toggle Perspective can be picked in Vivecraft's radial menu settings like any other key; on first launch 3rdVive puts it in an empty radial slot if there is one (a full menu is left alone, and if you remove the button it stays removed). The perspective is Minecraft's own: 3rdVive only stops Vivecraft from resetting it when VR turns on or off. Like vanilla, it starts in first person after a restart. While the add-on is enabled the perspective key no longer cycles Vivecraft's desktop mirror mode; change that in Vivecraft's settings.
 
 ## Menus and HUD in third person
 
@@ -25,13 +25,13 @@ With no menu open, the HUD floats in front of the camera (like Vivecraft's "Head
 
 ## Configuration
 
-`config/thirdvive.json` is created on first launch. The game also writes it (to remember your perspective), so edit it while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
+`config/thirdvive.json` is created on first launch. The game also writes it once (after adding the radial button), so edit it while the game is stopped. An invalid file stops loading with an error instead of silently resetting it.
 
 - `enabled` turns the add-on off without uninstalling it.
 - `distance`: 0 (default) uses vanilla camera distance, including player scale and vehicle, or an unscaled override of 0.25–32 blocks.
 - `firstPersonInMenus` (default false): snap back to first person while a menu or keyboard is open.
 - `hudOnCamera` (default true): the HUD floats in front of the camera in third person.
-- `rememberPerspective` (default true) and `perspective`: the remembered perspective.
+- `lockToCharacter` (default false): in third person, pin your head to the character so walking around your real room doesn't move it. When false, roomscale walking works as in normal Vivecraft.
 - `radialButtonAdded`: set after the radial button was added once.
 - `debugLog` (default false): logs movement state once a second in third person.
 

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Options.class)
 public class OptionsCameraMixin {
     @Inject(method = "setCameraType", at = @At("TAIL"))
-    private void thirdvive$rememberPerspective(CameraType type, CallbackInfo ci) {
+    private void thirdvive$perspectiveChanged(CameraType type, CallbackInfo ci) {
         ThirdVivePerspective.onChanged(type);
     }
 }

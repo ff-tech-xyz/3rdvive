@@ -19,6 +19,11 @@ public final class ThirdViveState {
             && !mc.options.getCameraType().isFirstPerson() && !MethodHolder.isInMenuRoom();
     }
 
+    /** Optional (lockToCharacter): your head is pinned to the character, so walking around your room doesn't move you. */
+    public static boolean anchored() {
+        return locked() && ThirdVive.config.lockToCharacter;
+    }
+
     public static boolean active() {
         Minecraft mc = Minecraft.getInstance();
         return locked()

@@ -8,7 +8,10 @@ import org.vivecraft.client_vr.ClientDataHolderVR;
 import org.vivecraft.client_vr.VRData;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 
-/** Translates world-space tracking so the head pivot follows the character's eye. */
+/**
+ * Optional (lockToCharacter, off by default): translates world-space tracking so the head pivot follows the
+ * character's eye. When off, roomscale walking moves your character as in normal Vivecraft.
+ */
 public final class ThirdViveAnchor {
     private static boolean wasLocked;
 
@@ -36,7 +39,7 @@ public final class ThirdViveAnchor {
     public static void beforePreTick(VRPlayer vr) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) ThirdViveRealPos.clear();
-        boolean locked = player != null && ThirdViveState.locked();
+        boolean locked = player != null && ThirdViveState.anchored();
         if (wasLocked && !locked && player != null
             && ClientDataHolderVR.getInstance().sneakTracker.sneakCounter <= 0) {
             vr.snapRoomOriginToPlayerEntity(player, true, true);
@@ -47,14 +50,14 @@ public final class ThirdViveAnchor {
 
     public static void onPreTick(VRPlayer vr) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || !ThirdViveState.locked()) return;
+        if (player == null || !ThirdViveState.anchored()) return;
         Vec3 origin = pin(vr.vrdata_world_pre, player.getEyePosition());
         vr.setRoomOrigin(origin.x, origin.y, origin.z, false);
     }
 
     public static void onPostTick(VRPlayer vr) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || !ThirdViveState.locked()) return;
+        if (player == null || !ThirdViveState.anchored()) return;
         Vec3 origin = pin(vr.vrdata_world_post, player.getEyePosition());
         vr.setRoomOrigin(origin.x, origin.y, origin.z, false);
     }
@@ -62,7 +65,7 @@ public final class ThirdViveAnchor {
     /** Only the render copy follows the interpolated eye; the room-space input stays physical. */
     public static void onRenderDataBuilt(VRPlayer vr, float partialTick) {
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || !ThirdViveState.locked()) return;
+        if (player == null || !ThirdViveState.anchored()) return;
         pin(vr.vrdata_world_render, player.getEyePosition(partialTick));
     }
 }
