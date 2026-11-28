@@ -23,3 +23,5 @@ The branch is pushed only when a testable build is ready for Elijah. `main` rema
 2026-11-27: 0.5.3. Removed the first-launch auto-add of Toggle Perspective to the radial menu (`MinecraftStartupMixin`, `radialButtonAdded`, config saving). The key is still selectable in Vivecraft radial menu settings like any other key. The game now only writes thirdvive.json when it is missing.
 
 2026-11-27: 0.5.4. Removed `enabled` (uninstall the jar to turn 3rdVive off). `lockMovement` now defaults to false. Added a TEMPORARY `[scale-check]` log line (ThirdViveScaleCheck, every 2 s in third person) to track down the back-view "everything looks smaller" bug, which Elijah sees on NeoForge in back view only.
+
+2026-11-27: 0.5.5. Removed the temporary `[scale-check]` log; the back-view scale bug on NeoForge went away on its own before any numbers were logged, so its cause is unknown.
