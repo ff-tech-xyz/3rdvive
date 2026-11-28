@@ -23,6 +23,16 @@ public class VRPlayerMixin {
         ThirdViveAnchor.beforePreTick((VRPlayer) (Object) this);
     }
 
+    /**
+     * With lockMovement, roomscale walking is off: real steps never move the character. Without this, Vivecraft
+     * moves the character to your feet (full-body tracking) or head each tick, the lock moves the room after it,
+     * and you get dragged along forever.
+     */
+    @Inject(method = "doPlayerMoveInRoom", at = @At("HEAD"), cancellable = true)
+    private void thirdvive$noRoomscaleWhenLocked(CallbackInfo ci) {
+        if (ThirdViveState.movementLocked()) ci.cancel();
+    }
+
     // Pin before Vivecraft snapshots vrdata_world_pre into its pose history.
     @Inject(method = "preTick", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD,
         target = "Lorg/vivecraft/client_vr/gameplay/VRPlayer;vrdata_world_pre:Lorg/vivecraft/client_vr/VRData;",

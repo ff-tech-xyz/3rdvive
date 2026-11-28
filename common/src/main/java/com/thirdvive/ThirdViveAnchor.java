@@ -19,7 +19,8 @@ public final class ThirdViveAnchor {
 
     /**
      * Moves the room so the head sits on the character's eye. Sideways it lines up Vivecraft's own
-     * head pivot, the same point roomscale walking moves the player to, so the two never fight.
+     * head pivot; roomscale walking is switched off while locked (VRPlayerMixin), so nothing else moves
+     * the character.
      * Height uses the camera's head center so the view height is unchanged.
      */
     private static Vec3 pin(VRData data, Vec3 eye) {
