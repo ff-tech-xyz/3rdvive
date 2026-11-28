@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 
 /**
  * Read at client startup. Invalid config is reported rather than silently discarded.
- * The game also writes this file (once, after adding the radial menu button), so edit it while the game is stopped.
+ * The game only writes this file when it is missing (with the defaults). Changes apply on the next launch.
  */
 public final class ThirdViveConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -23,7 +23,6 @@ public final class ThirdViveConfig {
     public boolean enabled = true;
     public boolean lockMovement = true; // true: in third person real walking/leaning don't move you (stick only); false: normal Vivecraft roomscale
     public boolean hudOnCamera = true; // true: HUD, menus, keyboard and radial menu sit in front of the camera; false: where they would be in first person
-    public boolean radialButtonAdded = false; // set once the perspective button was put in the radial menu
 
     public static ThirdViveConfig load(Path configDir) {
         Path path = configDir.resolve("thirdvive.json");
@@ -44,15 +43,6 @@ public final class ThirdViveConfig {
             return config;
         } catch (IOException | JsonSyntaxException | IllegalArgumentException e) {
             throw new IllegalStateException("Cannot load " + path + "; fix the file before starting 3rdVive", e);
-        }
-    }
-
-    /** Save while the game runs. A failed save is logged; it never crashes the game. */
-    public void save() {
-        try {
-            write();
-        } catch (IOException e) {
-            ThirdVive.LOGGER.warn("Could not save {}", this.path, e);
         }
     }
 

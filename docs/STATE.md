@@ -19,3 +19,5 @@ The branch is pushed only when a testable build is ready for Elijah. `main` rema
 2026-11-27: 0.5.1. Brought back the character lock as `lockMovement`, on by default (`ThirdViveAnchor` restored; camera pivots on the head when locked, on the character eye when not). Reported but not yet fixed: in the back view the world looks smaller / wrong scale; front view is fine.
 
 2026-11-27: 0.5.2. Fix: with lockMovement on, the player was dragged in one direction. Vivecraft roomscale walking moves the player to the feet position (feetBodyPosition with full-body tracking) or head pivot each tick, and the lock then moved the room after it, so it never settled. Roomscale walking (`VRPlayer.doPlayerMoveInRoom`) is now cancelled while the lock is on.
+
+2026-11-27: 0.5.3. Removed the first-launch auto-add of Toggle Perspective to the radial menu (`MinecraftStartupMixin`, `radialButtonAdded`, config saving). The key is still selectable in Vivecraft radial menu settings like any other key. The game now only writes thirdvive.json when it is missing.
