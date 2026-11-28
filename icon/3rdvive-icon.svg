@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#141b2b"/>
+
+  <!-- head strap (behind the headset) -->
+  <rect x="36" y="226" width="440" height="60" rx="20" fill="#d84a1b" stroke="#0b0f12" stroke-width="12"/>
+
+  <!-- headset shell -->
+  <rect x="86" y="146" width="340" height="220" rx="56" fill="#f3e7c4" stroke="#0b0f12" stroke-width="14"/>
+  <!-- shell bottom shading -->
+  <path d="M100 300 H412 V310 Q412 352 370 352 H142 Q100 352 100 310 Z" fill="#d9c99c"/>
+  <!-- nose cut-out -->
+  <path d="M216 366 Q256 300 296 366 Z" fill="#141b2b" stroke="#0b0f12" stroke-width="14" stroke-linejoin="round"/>
+
+  <!-- front visor -->
+  <rect x="122" y="178" width="268" height="132" rx="30" fill="#4fd6d2" stroke="#0b0f12" stroke-width="12"/>
+  <path d="M134 270 H378 V280 Q378 298 360 298 H152 Q134 298 134 280 Z" fill="#2a9f9c"/>
+
+  <!-- "3rd" label -->
+  <text x="256" y="272" text-anchor="middle"
+        font-family="DejaVu Sans, Arial Black, Helvetica, sans-serif" font-weight="900" font-size="104"
+        fill="#f5821f" stroke="#0b0f12" stroke-width="10" paint-order="stroke"
+        letter-spacing="-2">3rd</text>
+</svg>
