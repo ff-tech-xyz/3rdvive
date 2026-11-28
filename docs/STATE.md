@@ -21,3 +21,5 @@ The branch is pushed only when a testable build is ready for Elijah. `main` rema
 2026-11-27: 0.5.2. Fix: with lockMovement on, the player was dragged in one direction. Vivecraft roomscale walking moves the player to the feet position (feetBodyPosition with full-body tracking) or head pivot each tick, and the lock then moved the room after it, so it never settled. Roomscale walking (`VRPlayer.doPlayerMoveInRoom`) is now cancelled while the lock is on.
 
 2026-11-27: 0.5.3. Removed the first-launch auto-add of Toggle Perspective to the radial menu (`MinecraftStartupMixin`, `radialButtonAdded`, config saving). The key is still selectable in Vivecraft radial menu settings like any other key. The game now only writes thirdvive.json when it is missing.
+
+2026-11-27: 0.5.4. Removed `enabled` (uninstall the jar to turn 3rdVive off). `lockMovement` now defaults to false. Added a TEMPORARY `[scale-check]` log line (ThirdViveScaleCheck, every 2 s in third person) to track down the back-view "everything looks smaller" bug, which Elijah sees on NeoForge in back view only.

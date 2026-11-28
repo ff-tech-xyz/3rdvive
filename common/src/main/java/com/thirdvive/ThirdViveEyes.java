@@ -46,6 +46,9 @@ public final class ThirdViveEyes {
             frameFront = front;
             CACHE.clear();
         }
-        return CACHE.computeIfAbsent(pass, ignored -> ThirdViveCamera.shift(data, realEye));
+        VRData.VRDevicePose pose = CACHE.computeIfAbsent(pass, ignored -> ThirdViveCamera.shift(data, realEye));
+        VRData.VRDevicePose left = CACHE.get(RenderPass.LEFT), right = CACHE.get(RenderPass.RIGHT);
+        if (left != null && right != null) ThirdViveScaleCheck.check(data, left, right); // TEMPORARY
+        return pose;
     }
 }

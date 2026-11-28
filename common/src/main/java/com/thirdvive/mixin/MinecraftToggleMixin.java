@@ -14,6 +14,6 @@ public class MinecraftToggleMixin {
     @ModifyExpressionValue(method = "@MixinSquared:Handler",
         at = @At(value = "FIELD", target = "Lorg/vivecraft/client_vr/VRState;VR_RUNNING:Z"))
     private boolean thirdvive$usePerspectiveKey(boolean vrRunning) {
-        return vrRunning && (ThirdVive.config == null || !ThirdVive.config.enabled);
+        return vrRunning && ThirdVive.config == null;
     }
 }

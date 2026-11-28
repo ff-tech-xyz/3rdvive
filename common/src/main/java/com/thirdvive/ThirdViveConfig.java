@@ -20,8 +20,7 @@ public final class ThirdViveConfig {
 
     private transient Path path;
 
-    public boolean enabled = true;
-    public boolean lockMovement = true; // true: in third person real walking/leaning don't move you (stick only); false: normal Vivecraft roomscale
+    public boolean lockMovement = false; // true: in third person real walking/leaning don't move you (stick only); false: normal Vivecraft roomscale
     public boolean hudOnCamera = true; // true: HUD, menus, keyboard and radial menu sit in front of the camera; false: where they would be in first person
 
     public static ThirdViveConfig load(Path configDir) {

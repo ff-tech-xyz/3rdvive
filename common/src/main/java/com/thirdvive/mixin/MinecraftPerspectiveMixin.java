@@ -16,6 +16,6 @@ public class MinecraftPerspectiveMixin {
     @WrapWithCondition(method = "vivecraft$switchVRState(Z)V",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;setCameraType(Lnet/minecraft/client/CameraType;)V"))
     private boolean thirdvive$preservePerspective(Options options, CameraType type) {
-        return ThirdVive.config == null || !ThirdVive.config.enabled;
+        return ThirdVive.config == null;
     }
 }

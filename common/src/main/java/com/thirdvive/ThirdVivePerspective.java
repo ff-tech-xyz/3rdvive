@@ -15,7 +15,7 @@ public final class ThirdVivePerspective {
     /** Every perspective change, from any source: with hudOnCamera, move open VR menus to the new view. */
     public static void onChanged(CameraType type) {
         ThirdViveConfig config = ThirdVive.config;
-        if (config == null || !config.enabled || !config.hudOnCamera) return;
+        if (config == null || !config.hudOnCamera) return;
         if (VRState.VR_RUNNING && ClientDataHolderVR.getInstance().vrPlayer != null) {
             ThirdViveUi.reorient();
         }

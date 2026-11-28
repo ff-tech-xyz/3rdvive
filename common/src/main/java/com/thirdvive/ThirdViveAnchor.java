@@ -8,7 +8,7 @@ import org.vivecraft.client_vr.VRData;
 import org.vivecraft.client_vr.gameplay.VRPlayer;
 
 /**
- * lockMovement (on by default): in third person, moves Vivecraft's room every tick and frame so your real head
+ * lockMovement (off by default): in third person, moves Vivecraft's room every tick and frame so your real head
  * stays on the character's eyes. Real walking and leaning then don't move you; you move with the stick.
  * When off, roomscale walking moves your character as in normal Vivecraft.
  */

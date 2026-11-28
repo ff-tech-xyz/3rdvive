@@ -12,10 +12,10 @@ import org.vivecraft.client_vr.MethodHolder;
 public final class ThirdViveState {
     private ThirdViveState() {}
 
-    /** 3rdVive is enabled, VR is running, you are in a world, and the perspective is third person. */
+    /** VR is running, you are in a world, and the perspective is third person. */
     public static boolean active() {
         Minecraft mc = Minecraft.getInstance();
-        return ThirdVive.config != null && ThirdVive.config.enabled && VRState.VR_RUNNING
+        return ThirdVive.config != null && VRState.VR_RUNNING
             && mc.level != null && mc.player != null
             && !mc.options.getCameraType().isFirstPerson() && !MethodHolder.isInMenuRoom();
     }
