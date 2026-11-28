@@ -25,3 +25,5 @@ The branch is pushed only when a testable build is ready for Elijah. `main` rema
 2026-11-27: 0.5.4. Removed `enabled` (uninstall the jar to turn 3rdVive off). `lockMovement` now defaults to false. Added a TEMPORARY `[scale-check]` log line (ThirdViveScaleCheck, every 2 s in third person) to track down the back-view "everything looks smaller" bug, which Elijah sees on NeoForge in back view only.
 
 2026-11-27: 0.5.5. Removed the temporary `[scale-check]` log; the back-view scale bug on NeoForge went away on its own before any numbers were logged, so its cause is unknown.
+
+2026-11-27: 1.0.0. Same code as 0.5.5, renamed to version 1.0.0 per Elijah.

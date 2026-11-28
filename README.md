@@ -11,7 +11,7 @@ A client-side add-on for Vivecraft that makes Minecraft's third person work in V
 - Vivecraft 26.3-1.3.18, installed on the client. The supported range is 26.3-1.3.18 up to (but not including) 26.3-1.4.0. Older 26.3 Vivecraft builds are not checked.
 - No server-side install.
 
-Build with `./gradlew clean build mergedJar`. Install `build/libs/thirdvive-26.3-0.5.5.jar`; the same jar works on Fabric and NeoForge.
+Build with `./gradlew clean build mergedJar`. Install `build/libs/thirdvive-26.3-1.0.0.jar`; the same jar works on Fabric and NeoForge.
 
 ## Switching perspective
 
